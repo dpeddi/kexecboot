@@ -23,6 +23,7 @@ AC_ARG_ENABLE([host-debug],[AS_HELP_STRING([--enable-host-debug],[allow for non-
 AC_ARG_ENABLE([bg-buffer],[AS_HELP_STRING([--enable-bg-buffer],[enable special buffer to hold pre-drawed FB GUI background @<:@default=no@:>@])], [],[enable_bg_buffer=no])
 AC_ARG_ENABLE([numkeys],[AS_HELP_STRING([--enable-numkeys],[allow to choose menu item by 0-9 keys @<:@default=yes@:>@])], [],[enable_numkeys=yes])
 AC_ARG_ENABLE([devtmpfs],[AS_HELP_STRING([--enable-devtmpfs],[mount devtmpfs at startup in init-mode @<:@default=yes@:>@])], [],[enable_devtmpfs=yes])
+AC_ARG_ENABLE([vuplus-stb],[AS_HELP_STRING([--enable-vuplus-stb],[support framebuffer of vuplus stb @<:@default=no@:>@])],[],[enable_vuplus_stb=no])
 
 AC_ARG_ENABLE([timeout],[AS_HELP_STRING([--enable-timeout@<:@=sec@:>@],[allow to boot 1st kernel after timeout in seconds @<:@default=no@:>@])], [
 	test "x$enable_timeout" = xyes && enable_timeout=10
@@ -274,6 +275,12 @@ AS_IF([test "x$enable_ubi_vid_hdr_offset" != "xno"],
 		[
 		AC_DEFINE_UNQUOTED([UBI_VID_HDR_OFFSET], ["${enable_ubi_vid_hdr_offset}"], [UBI VID header offset])
 		], [])
+
+AS_IF([test "x$enable_vuplus_stb" != xno],
+		[
+		AC_DEFINE([USE_VUPLUS_STB], [1],[Define if you want to compile for vuplus stb])
+		], [])
+
 
 AC_ISC_POSIX
 AC_PROG_CC

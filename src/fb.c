@@ -24,6 +24,7 @@
 
 #include "fb.h"
 
+#ifdef USE_VUPLUS_STB
 #ifndef FBIO_BLIT
 #define FBIO_SET_MANUAL_BLIT _IOW('F', 0x21, __u8)
 #define FBIO_BLIT 0x22
@@ -39,6 +40,7 @@ void blit()
 	}
 }
 
+
 void enableManualBlit()
 {
 	unsigned char tmp = 1;
@@ -48,6 +50,7 @@ void enableManualBlit()
 		g_manual_blit = 1;
 }
 
+
 void disableManualBlit()
 {
 	unsigned char tmp = 0;
@@ -56,6 +59,7 @@ void disableManualBlit()
 	else
 		g_manual_blit = 0;
 }
+#endif
 
 
 static unsigned int compose_color (kx_rgba rgba) {
@@ -103,7 +107,9 @@ static unsigned int compose_color (kx_rgba rgba) {
 	}
 
 	/* add alpha channel */
+#ifdef USE_VUPLUS_STB
 	if ( a == 0) a = 255;
+#endif
 	color = (a << 24) | color;
 
 	return color;
@@ -385,6 +391,15 @@ static void fb_quirk_manual_update(void)
 	ioctl(fb.fd, OMAPFB_SYNC_GFX);
 }
 
+#elif defined(USE_VUPLUS_STB)
+static inline int fb_quirk_check_manual_update(void)
+{
+	return 1;
+}
+static inline void fb_quirk_manual_update(void)
+{
+blit();
+}
 #else
 static inline int fb_quirk_check_manual_update(void)
 {
@@ -392,7 +407,6 @@ static inline int fb_quirk_check_manual_update(void)
 }
 static inline void fb_quirk_manual_update(void)
 {
-blit();
 }
 #endif
 
@@ -444,9 +458,11 @@ void fb_destroy()
  */
 int clear_virtual(struct fb_var_screeninfo *fb_var)
 {
-//	if (fb_var->xres_virtual == fb_var->xres &&
-//	    fb_var->yres_virtual == fb_var->yres)
-//		return 0;
+#ifndef USE_VUPLUS_STB
+	if (fb_var->xres_virtual == fb_var->xres &&
+	    fb_var->yres_virtual == fb_var->yres)
+		return 0;
+#endif
 
 	fb_var->xres_virtual = fb_var->xres;
 	fb_var->yres_virtual = fb_var->yres;
@@ -549,13 +565,16 @@ int fb_new(int angle)
 		goto fail;
 	}
 
+#ifdef USE_VUPLUS_STB
 	enableManualBlit();
+#endif
 
 	if (ioctl(fb.fd, FBIOGET_VSCREENINFO, &fb_var) == -1) {
 		log_msg(lg, "Error getting variable framebuffer info: %s", ERRMSG);
 		goto fail;
 	}
 
+#ifdef USE_VUPLUS_STB
 //	fb_var.xres_virtual = fb_var.xres = 1280;
 //	fb_var.yres_virtual = fb_var.yres = 720;
 	fb_var.xres_virtual = fb_var.xres = 768;
@@ -564,6 +583,7 @@ int fb_new(int angle)
 	fb_var.xoffset = fb_var.yoffset = 0;
 	fb_var.height = 0;
 	fb_var.width = 0;
+#endif
 
 	if (clear_virtual(&fb_var))
 	{
@@ -624,7 +644,7 @@ int fb_new(int angle)
 		fb.rgbmode = GENERIC;
 	}
 
-//	if (fb_quirk_check_manual_update())
+	if (fb_quirk_check_manual_update())
 		fb.needs_manual_update = 1;
 
 	fb.base = (char *) mmap((caddr_t) NULL,
@@ -759,7 +779,6 @@ void fb_draw_rounded_rect(int x, int y, int width, int height,
 	/* Bottom rounded part */
 	fb.draw_hline(x+1, dy++, width-2, color);
 	fb.draw_hline(x+2, dy++, width-4, color);
-
 }
 
 
