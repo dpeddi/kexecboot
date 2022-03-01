@@ -318,6 +318,7 @@ int inputs_process_evdev(int fd)
 		case 63:			/* Zaurus: Enter (remove?) */
 		case KEY_END:		/* Motorola Mapphone devices (107) */
 		case KEY_POWER:		/* GTA02: Power (116) */
+		case 352: //vuplus ok	
 		case KEY_PHONE:		/* GTA02: AUX (169) */
 			action = A_SELECT;
 			break;
