@@ -30,6 +30,7 @@
 #include <sys/reboot.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "config.h"
 #include "util.h"
@@ -756,6 +757,17 @@ int do_init(void)
 		perror("Can't mount sysfs");
 		exit(-1);
 	}
+
+#ifdef USE_VUPLUS_STB
+	/* Mount sysfs */
+	mkdir("/tmp", 1777);
+	if ( -1 == mount("tmpfs", "/tmp", "tmpfs",
+			0, NULL) ) {
+		perror("Can't mount tmpfs");
+		exit(-1);
+	}
+	system("PATH=/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin /etc/init.d/vuplus-platform-util start");
+#endif
 
 	FILE *f;
 	/* Set up console loglevel */
